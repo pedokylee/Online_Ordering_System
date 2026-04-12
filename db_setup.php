@@ -20,6 +20,17 @@ try {
     $conn->exec($createCustomers);
     echo "✓ Customers table created successfully<br>";
 
+    // Create Categories table
+    $createCategories = "CREATE TABLE IF NOT EXISTS categories (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci";
+
+    $conn->exec($createCategories);
+    echo "✓ Categories table created successfully<br>";
+
     // Create Products table
     $createProducts = "CREATE TABLE IF NOT EXISTS products (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -94,6 +105,25 @@ try {
         ]);
     }
     echo "✓ Sample customers inserted<br>";
+
+    // Insert sample categories
+    $categories = [
+        ['Pizzas', 'Fresh and delicious pizzas with various toppings'],
+        ['Burgers', 'Juicy burgers made with premium ingredients'],
+        ['Salads', 'Healthy fresh salads for nutritious meals'],
+        ['Desserts', 'Sweet treats and delectable desserts'],
+        ['Beverages', 'Refreshing drinks and hot beverages']
+    ];
+
+    $stmt = $conn->prepare("INSERT INTO categories (name, description) VALUES (:name, :description)");
+    
+    foreach ($categories as $category) {
+        $stmt->execute([
+            ':name' => $category[0],
+            ':description' => $category[1]
+        ]);
+    }
+    echo "✓ Sample categories inserted<br>";
 
     // Insert sample products (food menu items for FeastFlow)
     $products = [

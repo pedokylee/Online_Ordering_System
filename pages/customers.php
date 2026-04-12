@@ -88,14 +88,14 @@ $avatar_colors = ['#D4830A','#27814A','#C0392B','#185FA5','#7F77DD'];
     <div class="table-toolbar">
       <h3>All Customers (<?php echo count($customers); ?>)</h3>
       <div class="search-box">
-        <span>🔍</span>
+        <span><?php echo svg_icon('menu', '16'); ?></span>
         <input type="text" id="searchInput" placeholder="Search customers…" oninput="filterTable()">
       </div>
     </div>
 
     <?php if (empty($customers)): ?>
       <div class="empty-state">
-        <div class="empty-icon">👥</div>
+        <div class="empty-icon"><?php echo svg_icon('users', '32'); ?></div>
         <h3>No customers yet</h3>
         <p>Add your first customer to get started.</p>
         <a href="?action=add" class="btn btn-primary">+ Add Customer</a>

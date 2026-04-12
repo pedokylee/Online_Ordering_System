@@ -99,7 +99,7 @@ $subtotal = array_sum(array_map(function($i){ return $i['price'] * $i['qty']; },
 $tax      = round($subtotal * 0.10, 2);
 $total    = round($subtotal + $tax, 2);
 
-$food_emojis = ['🍔','🍕','🌮','🍜','🍣','🥗','🍗','🥩','🍱','🥘','🍛','🫕'];
+$icon_types = ['food', 'menu', 'orders', 'users', 'checkout'];
 ?>
 <?php include(dirname(__FILE__) . '/../includes/header.php'); ?>
 <?php include(dirname(__FILE__) . '/../includes/navbar.php'); ?>
@@ -123,7 +123,7 @@ $food_emojis = ['🍔','🍕','🌮','🍜','🍣','🥗','🍗','🥩','🍱','
     <!-- Current Cart -->
     <div class="table-container mb-3">
       <div class="table-toolbar">
-        <h3>🛒 Cart (<?php echo count($cart); ?> item<?php echo count($cart) !== 1 ? 's' : ''; ?>)</h3>
+        <h3><?php echo svg_icon('checkout', '18'); ?> Cart (<?php echo count($cart); ?> item<?php echo count($cart) !== 1 ? 's' : ''; ?>)</h3>
         <?php if (!empty($cart)): ?>
           <a href="?clear=1" class="btn btn-sm btn-danger"
              onclick="return confirm('Clear cart?')"
@@ -135,7 +135,7 @@ $food_emojis = ['🍔','🍕','🌮','🍜','🍣','🥗','🍗','🥩','🍱','
 
       <?php if (empty($cart)): ?>
         <div class="empty-state">
-          <div class="empty-icon">🛒</div>
+          <div class="empty-icon"><?php echo svg_icon('checkout', '32'); ?></div>
           <h3>Your cart is empty</h3>
           <p>Browse the menu below and add items to get started.</p>
         </div>
@@ -143,7 +143,7 @@ $food_emojis = ['🍔','🍕','🌮','🍜','🍣','🥗','🍗','🥩','🍱','
         <form method="POST">
           <?php $idx = 0; foreach ($cart as $pid => $item): ?>
             <div class="cart-item">
-              <div class="cart-item-img"><?php echo $food_emojis[$idx % count($food_emojis)]; ?></div>
+              <div class="cart-item-img"><?php echo svg_icon($icon_types[$idx % count($icon_types)], '24'); ?></div>
               <div class="cart-item-info">
                 <div class="cart-item-name"><?php echo htmlspecialchars($item['name']); ?></div>
                 <div class="cart-item-price">$<?php echo number_format($item['price'], 2); ?> each</div>
@@ -167,15 +167,15 @@ $food_emojis = ['🍔','🍕','🌮','🍜','🍣','🥗','🍗','🥩','🍱','
     <!-- Browse Menu -->
     <div class="table-container">
       <div class="table-toolbar">
-        <h3>🍽️ Add from Menu</h3>
+        <h3><?php echo svg_icon('food', '18'); ?> Add from Menu</h3>
         <div class="search-box">
-          <span>🔍</span>
+          <span><?php echo svg_icon('menu', '16'); ?></span>
           <input type="text" id="menuSearch" placeholder="Search menu…" oninput="filterMenu()">
         </div>
       </div>
       <?php if (empty($products)): ?>
         <div class="empty-state" style="padding:2rem;">
-          <div class="empty-icon">🍽️</div>
+          <div class="empty-icon"><?php echo svg_icon('food', '32'); ?></div>
           <h3>No menu items found</h3>
           <p><a href="products.php?action=add">Add menu items</a> first.</p>
         </div>
@@ -184,7 +184,7 @@ $food_emojis = ['🍔','🍕','🌮','🍜','🍣','🥗','🍗','🥩','🍱','
           <?php foreach ($products as $i => $p): ?>
             <div class="product-card menu-item"
                  data-name="<?php echo strtolower(htmlspecialchars($p['name'])); ?>">
-              <div class="product-card-img"><?php echo $food_emojis[$i % count($food_emojis)]; ?></div>
+              <div class="product-card-img"><?php echo svg_icon($icon_types[$i % count($icon_types)], '24'); ?></div>
               <div class="product-card-body">
                 <div class="product-card-name"><?php echo htmlspecialchars($p['name']); ?></div>
                 <div class="product-card-desc">

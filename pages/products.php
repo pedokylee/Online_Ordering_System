@@ -60,7 +60,7 @@ if ($action === 'list') {
     }
 }
 
-$food_emojis = ['🍔','🍕','🌮','🍜','🍣','🥗','🍗','🥩','🍱','🥘','🍛','🫕'];
+$icon_types = ['food', 'menu', 'orders', 'users', 'checkout'];
 ?>
 <?php include(dirname(__FILE__) . '/../includes/header.php'); ?>
 <?php include(dirname(__FILE__) . '/../includes/navbar.php'); ?>
@@ -79,7 +79,7 @@ $food_emojis = ['🍔','🍕','🌮','🍜','🍣','🥗','🍗','🥩','🍱','
       <p>Manage your food catalog — add, edit, or remove dishes.</p>
     </div>
     <div class="page-header-actions">
-      <a href="?action=add" class="btn btn-primary">🍔 Add New Item</a>
+      <a href="?action=add" class="btn btn-primary"><?php echo svg_icon('food', '16'); ?> Add New Item</a>
     </div>
   </div>
 
@@ -87,14 +87,14 @@ $food_emojis = ['🍔','🍕','🌮','🍜','🍣','🥗','🍗','🥩','🍱','
     <div class="table-toolbar">
       <h3>All Items (<?php echo count($products); ?>)</h3>
       <div class="search-box">
-        <span>🔍</span>
+        <span><?php echo svg_icon('menu', '16'); ?></span>
         <input type="text" id="searchInput" placeholder="Search menu items…" oninput="filterTable()">
       </div>
     </div>
 
     <?php if (empty($products)): ?>
       <div class="empty-state">
-        <div class="empty-icon">🍽️</div>
+        <div class="empty-icon"><?php echo svg_icon('food', '32'); ?></div>
         <h3>No menu items yet</h3>
         <p>Start building your menu by adding your first dish.</p>
         <a href="?action=add" class="btn btn-primary">+ Add First Item</a>
@@ -118,7 +118,7 @@ $food_emojis = ['🍔','🍕','🌮','🍜','🍣','🥗','🍗','🥩','🍱','
                 <td class="text-muted text-sm"><?php echo $i + 1; ?></td>
                 <td>
                   <div class="d-flex align-center gap-1">
-                    <span style="font-size:20px"><?php echo $food_emojis[$i % count($food_emojis)]; ?></span>
+                    <span style="font-size:20px"><?php echo svg_icon($icon_types[$i % count($icon_types)], '20'); ?></span>
                     <span class="fw-600"><?php echo htmlspecialchars($p['name']); ?></span>
                   </div>
                 </td>

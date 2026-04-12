@@ -73,7 +73,7 @@ foreach ($required_files as $file => $description) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔍 Online Ordering System - Project Verification</h1>
+            <h1>FeastFlow - Project Verification</h1>
             <p>File and structure verification report</p>
         </div>
 
@@ -102,7 +102,7 @@ foreach ($required_files as $file => $description) {
         </div>
 
         <div class="stats">
-            <h2>📊 Project Statistics</h2>
+            <h2>� Project Statistics</h2>
             <div class="stat-row">
                 <span>Total Files Required:</span>
                 <strong><?php echo count($required_files); ?></strong>

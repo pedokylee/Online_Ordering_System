@@ -76,7 +76,7 @@ function order_badge($status) {
       <p>Track and manage all customer orders.</p>
     </div>
     <div class="page-header-actions">
-      <a href="../pages/cart.php" class="btn btn-primary">🛒 New Order</a>
+      <a href="../pages/cart.php" class="btn btn-primary"><?php echo svg_icon('checkout', '16'); ?> New Order</a>
     </div>
   </div>
 
@@ -84,17 +84,17 @@ function order_badge($status) {
     <div class="table-toolbar">
       <h3>All Orders (<?php echo count($orders); ?>)</h3>
       <div class="search-box">
-        <span>🔍</span>
+        <span><?php echo svg_icon('menu', '16'); ?></span>
         <input type="text" id="searchInput" placeholder="Search orders…" oninput="filterTable()">
       </div>
     </div>
 
     <?php if (empty($orders)): ?>
       <div class="empty-state">
-        <div class="empty-icon">📋</div>
+        <div class="empty-icon"><?php echo svg_icon('orders', '32'); ?></div>
         <h3>No orders yet</h3>
         <p>Orders placed through the cart will appear here.</p>
-        <a href="../pages/cart.php" class="btn btn-primary">🛒 Start an Order</a>
+        <a href="../pages/cart.php" class="btn btn-primary"><?php echo svg_icon('checkout', '16'); ?> Start an Order</a>
       </div>
     <?php else: ?>
       <div class="table-overflow">

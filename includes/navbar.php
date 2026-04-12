@@ -12,7 +12,7 @@ function nav_active($page, $current) {
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <a href="<?php echo $base; ?>index.php" class="brand-logo">
-      <div class="brand-icon">🍽️</div>
+      <div class="brand-icon"><?php echo svg_icon('food', '24'); ?></div>
       <div>
         <div class="brand-name">FeastFlow</div>
         <div class="brand-tagline">Food Ordering System</div>
@@ -24,23 +24,23 @@ function nav_active($page, $current) {
     <div class="nav-section-label">Main</div>
     <a href="<?php echo $base; ?>index.php"
        class="nav-link <?php echo nav_active('index', $current_page); ?>">
-      <span class="nav-icon">📊</span> Dashboard
+      <span class="nav-icon"><?php echo svg_icon('menu', '18'); ?></span> Dashboard
     </a>
 
     <div class="nav-section-label">Catalog</div>
     <a href="<?php echo $base; ?>pages/products.php"
        class="nav-link <?php echo nav_active('products', $current_page); ?>">
-      <span class="nav-icon">🍔</span> Menu Items
+      <span class="nav-icon"><?php echo svg_icon('food', '18'); ?></span> Menu Items
     </a>
     <a href="<?php echo $base; ?>pages/categories.php"
        class="nav-link <?php echo nav_active('categories', $current_page); ?>">
-      <span class="nav-icon">🗂️</span> Categories
+      <span class="nav-icon"><?php echo svg_icon('menu', '18'); ?></span> Categories
     </a>
 
     <div class="nav-section-label">Orders</div>
     <a href="<?php echo $base; ?>pages/cart.php"
        class="nav-link <?php echo nav_active('cart', $current_page); ?>">
-      <span class="nav-icon">🛒</span> Cart
+      <span class="nav-icon"><?php echo svg_icon('checkout', '18'); ?></span> Cart
       <?php
         $cart_count = isset($_SESSION['cart']) ? array_sum(array_column($_SESSION['cart'], 'qty')) : 0;
         if ($cart_count > 0):
@@ -50,13 +50,13 @@ function nav_active($page, $current) {
     </a>
     <a href="<?php echo $base; ?>pages/orders.php"
        class="nav-link <?php echo nav_active('orders', $current_page); ?>">
-      <span class="nav-icon">📋</span> All Orders
+      <span class="nav-icon"><?php echo svg_icon('orders', '18'); ?></span> All Orders
     </a>
 
     <div class="nav-section-label">People</div>
     <a href="<?php echo $base; ?>pages/customers.php"
        class="nav-link <?php echo nav_active('customers', $current_page); ?>">
-      <span class="nav-icon">👥</span> Customers
+      <span class="nav-icon"><?php echo svg_icon('users', '18'); ?></span> Customers
     </a>
   </nav>
 
@@ -81,7 +81,7 @@ function nav_active($page, $current) {
   <div class="topbar-right">
     <a href="<?php echo $base; ?>pages/products.php?action=add" class="topbar-btn primary">+ Add Item</a>
     <a href="<?php echo $base; ?>pages/cart.php" class="topbar-btn cart-btn">
-      🛒
+      <?php echo svg_icon('checkout', '18'); ?>
       <?php if ($cart_count > 0): ?>
         <span class="cart-count"><?php echo $cart_count; ?></span>
       <?php endif; ?>

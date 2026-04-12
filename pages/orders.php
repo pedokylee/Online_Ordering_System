@@ -12,7 +12,7 @@ $message    = '';
 $action     = $_GET['action'] ?? 'list';
 
 // Status update via POST
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['status'])) {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['order_id'], $_POST['status'])) {
     $id     = intval($_POST['order_id']);
     $status = $_POST['status'];
     $message = $order_obj->updateStatus($id, $status)

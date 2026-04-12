@@ -17,7 +17,7 @@ if (!isset($_SESSION['cart'])) {
 }
 
 // Add item to cart
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product_id'])) {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['add_product_id'])) {
     $pid = intval($_POST['add_product_id']);
     $qty = max(1, intval($_POST['qty'] ?? 1));
     if (isset($_SESSION['cart'][$pid])) {
@@ -42,7 +42,7 @@ if (isset($_GET['remove'])) {
 }
 
 // Update quantities
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_qty'], $_POST['qty_item'])) {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['update_qty'], $_POST['qty_item'])) {
     foreach ($_POST['qty_item'] as $pid => $qty) {
         $qty = intval($qty);
         if ($qty <= 0) {
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_qty'], $_POST[
 }
 
 // Checkout
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout'])) {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['checkout'])) {
     $customer_id = intval($_POST['customer_id'] ?? 0);
     if (!empty($_SESSION['cart']) && $customer_id > 0) {
         $cart        = $_SESSION['cart'];

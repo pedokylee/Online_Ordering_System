@@ -12,7 +12,7 @@ $action     = $_GET['action'] ?? 'list';
 $message    = '';
 
 // Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] ?? '' === 'POST') {
     $name  = trim($_POST['name']  ?? '');
     $price = floatval($_POST['price'] ?? 0);
     $stock = intval($_POST['stock'] ?? 0);

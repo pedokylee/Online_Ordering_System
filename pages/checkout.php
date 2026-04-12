@@ -18,7 +18,7 @@ $error = '';
 // Demo customer ID
 $customer_id = 1;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'checkout') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'checkout') {
     $cart_result = $cart->getCart($customer_id);
     
     if (!$cart_result || $cart_result->rowCount() === 0) {

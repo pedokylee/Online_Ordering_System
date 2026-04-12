@@ -70,6 +70,7 @@ $cart_total = $cart->getCartTotal($customer_id);
 <?php include(dirname(__FILE__, 2) . '/includes/header.php'); ?>
 <?php include(dirname(__FILE__, 2) . '/includes/navbar.php'); ?>
 
+<div class="content-area">
 <main class="main-content">
     <div class="page-header">
         <h1>Complete Your Order</h1>
@@ -149,5 +150,6 @@ $cart_total = $cart->getCartTotal($customer_id);
         </div>
     <?php endif; ?>
 </main>
+</div>
 
 <?php include(dirname(__FILE__, 2) . '/includes/footer.php'); ?>

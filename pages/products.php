@@ -65,6 +65,9 @@ $icon_types = ['food', 'menu', 'orders', 'users', 'checkout'];
 <?php include(dirname(__FILE__) . '/../includes/header.php'); ?>
 <?php include(dirname(__FILE__) . '/../includes/navbar.php'); ?>
 
+<div class="content-area">
+<main class="main-content">
+
 <?php if ($message): ?>
   <div class="alert alert-<?php echo $message['type']; ?>">
     <?php echo htmlspecialchars($message['text']); ?>
@@ -206,5 +209,8 @@ function filterTable() {
   });
 }
 </script>
+
+</main>
+</div>
 
 <?php include(dirname(__FILE__) . '/../includes/footer.php'); ?>

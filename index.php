@@ -60,22 +60,22 @@ $total_revenue = $order->getTotalRevenue();
         <h2>Features</h2>
         <div class="features-grid">
             <div class="feature-card">
-                <div class="feature-icon">🔒</div>
+                <div class="feature-icon"><?php echo svg_icon('menu', '32'); ?></div>
                 <h3>SQL Injection Protection</h3>
-                <p>All database queries use MySQLi prepared statements for maximum security.</p>
+                <p>All database queries use PDO prepared statements for maximum security.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">📊</div>
+                <div class="feature-icon"><?php echo svg_icon('orders', '32'); ?></div>
                 <h3>Database Design</h3>
                 <p>Well-structured database with proper relationships and constraints.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">⚙️</div>
+                <div class="feature-icon"><?php echo svg_icon('checkout', '32'); ?></div>
                 <h3>Full CRUD Operations</h3>
                 <p>Create, Read, Update, and Delete operations for all entities.</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">🎨</div>
+                <div class="feature-icon"><?php echo svg_icon('food', '32'); ?></div>
                 <h3>Modern UI Design</h3>
                 <p>Clean and responsive interface for better user experience.</p>
             </div>

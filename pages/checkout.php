@@ -8,7 +8,7 @@ require_once dirname(__FILE__, 2) . '/classes/Cart.php';
 require_once dirname(__FILE__, 2) . '/classes/Order.php';
 require_once dirname(__FILE__, 2) . '/classes/Product.php';
 
-$page_title = 'Checkout';
+$page_title = 'Complete Your Order';
 $cart = new Cart($conn);
 $order = new Order($conn);
 $product = new Product($conn);

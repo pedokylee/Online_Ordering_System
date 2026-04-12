@@ -1,207 +1,224 @@
 <?php
 /**
- * Orders page - View and manage orders
+ * Orders page
  */
+require_once dirname(__FILE__) . '/../config/config.php';
+require_once dirname(__FILE__) . '/../classes/Order.php';
 
-require_once dirname(__FILE__, 2) . '/config/config.php';
-require_once dirname(__FILE__, 2) . '/classes/Order.php';
-
+$base_path  = '../';
 $page_title = 'Orders';
-$order = new Order($conn);
-$action = isset($_GET['action']) ? sanitize_input($_GET['action']) : '';
-$message = '';
-$error = '';
+$order_obj  = new Order($conn);
+$message    = '';
+$action     = $_GET['action'] ?? 'list';
 
-// Handle status updates
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_status') {
-    $order_id = (int)($_POST['order_id'] ?? 0);
-    $status = sanitize_input($_POST['status'] ?? '');
+// Status update via POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['status'])) {
+    $id     = intval($_POST['order_id']);
+    $status = $_POST['status'];
+    $message = $order_obj->updateStatus($id, $status)
+        ? ['type' => 'success', 'text' => '✅ Order status updated!']
+        : ['type' => 'danger',  'text' => '❌ Failed to update status.'];
+}
 
-    $valid_statuses = ['pending', 'confirmed', 'shipped', 'completed', 'cancelled'];
-    
-    if ($order_id > 0 && in_array($status, $valid_statuses)) {
-        if ($order->updateStatus($order_id, $status)) {
-            $message = "✓ Order status updated!";
-        } else {
-            $error = "Error updating order!";
-        }
-    } else {
-        $error = "Invalid order or status!";
+// Delete
+if ($action === 'delete' && isset($_GET['id'])) {
+    $id = intval($_GET['id']);
+    $message = $order_obj->delete($id)
+        ? ['type' => 'success', 'text' => '✅ Order deleted.']
+        : ['type' => 'danger',  'text' => '❌ Could not delete order.'];
+    $action = 'list';
+}
+
+// View single order
+$view_order = null;
+$order_items = [];
+if ($action === 'view' && isset($_GET['id'])) {
+    $view_order  = $order_obj->getById(intval($_GET['id']));
+    $items_stmt  = $order_obj->getOrderItems(intval($_GET['id']));
+    $order_items = $items_stmt ? $items_stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+    if (empty($view_order)) { $action = 'list'; }
+}
+
+// Fetch all orders via read() → PDOStatement → fetchAll
+$orders = [];
+if ($action === 'list') {
+    $stmt = $order_obj->read();
+    if ($stmt) {
+        $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 
-// Get single order details
-$order_details = [];
-if ($action === 'view' && isset($_GET['id'])) {
-    $id = sanitize_input($_GET['id']);
-    $order_details = $order->getById($id);
+$statuses = ['pending','processing','ready','completed','cancelled'];
+
+function order_badge($status) {
+    $map = [
+        'pending'    => 'badge-warning',
+        'processing' => 'badge-neutral',
+        'ready'      => 'badge-success',
+        'completed'  => 'badge-success',
+        'cancelled'  => 'badge-danger',
+    ];
+    return $map[strtolower($status)] ?? 'badge-neutral';
 }
-
 ?>
-<?php include(dirname(__FILE__, 2) . '/includes/header.php'); ?>
-<?php include(dirname(__FILE__, 2) . '/includes/navbar.php'); ?>
+<?php include(dirname(__FILE__) . '/../includes/header.php'); ?>
+<?php include(dirname(__FILE__) . '/../includes/navbar.php'); ?>
 
-<main class="main-content">
-    <div class="page-header">
-        <h1>Order Management</h1>
+<?php if ($message): ?>
+  <div class="alert alert-<?php echo $message['type']; ?>"><?php echo htmlspecialchars($message['text']); ?></div>
+<?php endif; ?>
+
+<?php if ($action === 'list'): ?>
+
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Orders</h1>
+      <p>Track and manage all customer orders.</p>
+    </div>
+    <div class="page-header-actions">
+      <a href="../pages/cart.php" class="btn btn-primary">🛒 New Order</a>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <div class="table-toolbar">
+      <h3>All Orders (<?php echo count($orders); ?>)</h3>
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="Search orders…" oninput="filterTable()">
+      </div>
     </div>
 
-    <?php if (!empty($message)): ?>
-        <div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div>
-    <?php endif; ?>
-    <?php if (!empty($error)): ?>
-        <div class="alert alert-error"><?php echo htmlspecialchars($error); ?></div>
-    <?php endif; ?>
-
-    <?php if ($action === 'view' && !empty($order_details)): ?>
-        <!-- Order Details View -->
-        <div class="order-detail">
-            <div class="detail-header">
-                <h2>Order #<?php echo htmlspecialchars($order_details['id']); ?></h2>
-                <a href="orders.php" class="btn btn-secondary">Back to Orders</a>
-            </div>
-
-            <div class="detail-grid">
-                <div class="detail-section">
-                    <h3>Order Information</h3>
-                    <div class="detail-item">
-                        <span class="label">Order ID:</span>
-                        <span class="value"><?php echo htmlspecialchars($order_details['id']); ?></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="label">Order Date:</span>
-                        <span class="value"><?php echo date('M d, Y H:i', strtotime($order_details['created_at'])); ?></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="label">Total Amount:</span>
-                        <span class="value highlight"><?php echo CURRENCY_SYMBOL . number_format($order_details['total_amount'], 2); ?></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="label">Status:</span>
-                        <span class="status-badge status-<?php echo htmlspecialchars($order_details['status']); ?>">
-                            <?php echo ucfirst(htmlspecialchars($order_details['status'])); ?>
-                        </span>
-                    </div>
-                </div>
-
-                <div class="detail-section">
-                    <h3>Customer Information</h3>
-                    <div class="detail-item">
-                        <span class="label">Customer Name:</span>
-                        <span class="value"><?php echo htmlspecialchars($order_details['name']); ?></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="label">Email:</span>
-                        <span class="value"><?php echo htmlspecialchars($order_details['email']); ?></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="label">Phone:</span>
-                        <span class="value"><?php echo htmlspecialchars($order_details['phone']); ?></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Update Status Form -->
-            <div class="update-status">
-                <h3>Update Order Status</h3>
-                <form method="POST" class="status-form">
-                    <input type="hidden" name="action" value="update_status">
-                    <input type="hidden" name="order_id" value="<?php echo $order_details['id']; ?>">
-                    
-                    <select name="status" class="form-select">
-                        <option value="pending" <?php echo $order_details['status'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
-                        <option value="confirmed" <?php echo $order_details['status'] === 'confirmed' ? 'selected' : ''; ?>>Confirmed</option>
-                        <option value="shipped" <?php echo $order_details['status'] === 'shipped' ? 'selected' : ''; ?>>Shipped</option>
-                        <option value="completed" <?php echo $order_details['status'] === 'completed' ? 'selected' : ''; ?>>Completed</option>
-                        <option value="cancelled" <?php echo $order_details['status'] === 'cancelled' ? 'selected' : ''; ?>>Cancelled</option>
-                    </select>
-                    <button type="submit" class="btn btn-primary">Update Status</button>
-                </form>
-            </div>
-
-            <!-- Order Items -->
-            <div class="order-items">
-                <h3>Order Items</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Quantity</th>
-                            <th>Unit Price</th>
-                            <th>Subtotal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        $items_result = $order->getOrderItems($order_details['id']);
-                        if ($items_result && $items_result->rowCount() > 0):
-                            while($item = $items_result->fetch()):
-                        ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($item['name']); ?></td>
-                            <td><?php echo $item['quantity']; ?></td>
-                            <td><?php echo CURRENCY_SYMBOL . number_format($item['price'], 2); ?></td>
-                            <td><?php echo CURRENCY_SYMBOL . number_format($item['price'] * $item['quantity'], 2); ?></td>
-                        </tr>
-                        <?php 
-                            endwhile;
-                        endif; 
-                        ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <?php if (empty($orders)): ?>
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h3>No orders yet</h3>
+        <p>Orders placed through the cart will appear here.</p>
+        <a href="../pages/cart.php" class="btn btn-primary">🛒 Start an Order</a>
+      </div>
     <?php else: ?>
-        <!-- Orders List -->
-        <div class="table-container">
-            <h2>All Orders</h2>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Order ID</th>
-                        <th>Customer</th>
-                        <th>Email</th>
-                        <th>Total Amount</th>
-                        <th>Status</th>
-                        <th>Order Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $result = $order->read();
-                    if ($result && $result->rowCount() > 0):
-                        while($row = $result->fetch()):
-                    ?>
-                    <tr>
-                        <td>#<?php echo htmlspecialchars($row['id']); ?></td>
-                        <td><?php echo htmlspecialchars($row['name']); ?></td>
-                        <td><?php echo htmlspecialchars($row['email']); ?></td>
-                        <td><?php echo CURRENCY_SYMBOL . number_format($row['total_amount'], 2); ?></td>
-                        <td>
-                            <span class="status-badge status-<?php echo htmlspecialchars($row['status']); ?>">
-                                <?php echo ucfirst(htmlspecialchars($row['status'])); ?>
-                            </span>
-                        </td>
-                        <td><?php echo date('M d, Y', strtotime($row['created_at'])); ?></td>
-                        <td>
-                            <div class="action-buttons">
-                                <a href="?action=view&id=<?php echo $row['id']; ?>" class="btn-icon btn-edit" title="View">👁️</a>
-                            </div>
-                        </td>
-                    </tr>
-                    <?php 
-                        endwhile;
-                    else:
-                    ?>
-                    <tr>
-                        <td colspan="7" class="text-center">No orders found</td>
-                    </tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
+      <div class="table-overflow">
+        <table id="ordersTable">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Customer</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($orders as $o): ?>
+              <tr>
+                <td class="fw-600">#<?php echo str_pad($o['id'], 4, '0', STR_PAD_LEFT); ?></td>
+                <td><?php echo htmlspecialchars($o['name'] ?? 'Unknown'); ?></td>
+                <td class="fw-600 text-gold">$<?php echo number_format($o['total_amount'] ?? 0, 2); ?></td>
+                <td>
+                  <form method="POST" style="display:inline-flex;align-items:center;gap:6px;">
+                    <input type="hidden" name="order_id" value="<?php echo $o['id']; ?>">
+                    <select name="status" onchange="this.form.submit()"
+                            style="font-size:11px;padding:3px 6px;border:1px solid var(--c-border-strong);border-radius:6px;background:var(--c-surface);color:var(--c-ink);cursor:pointer;font-family:var(--ff-body);">
+                      <?php foreach ($statuses as $s): ?>
+                        <option value="<?php echo $s; ?>" <?php echo strtolower($o['status'] ?? '') === $s ? 'selected' : ''; ?>>
+                          <?php echo ucfirst($s); ?>
+                        </option>
+                      <?php endforeach; ?>
+                    </select>
+                  </form>
+                </td>
+                <td class="text-sm text-muted">
+                  <?php echo !empty($o['created_at']) ? date('M d, Y', strtotime($o['created_at'])) : '—'; ?>
+                </td>
+                <td>
+                  <div class="td-actions">
+                    <a href="?action=view&id=<?php echo $o['id']; ?>" class="btn btn-sm btn-secondary">👁 View</a>
+                    <a href="?action=delete&id=<?php echo $o['id']; ?>"
+                       class="btn btn-sm btn-danger"
+                       onclick="return confirm('Delete order #<?php echo str_pad($o['id'],4,'0',STR_PAD_LEFT); ?>?')">🗑️</a>
+                  </div>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
     <?php endif; ?>
-</main>
+  </div>
 
-<?php include(dirname(__FILE__, 2) . '/includes/footer.php'); ?>
+<?php elseif ($action === 'view' && $view_order): ?>
+
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Order #<?php echo str_pad($view_order['id'], 4, '0', STR_PAD_LEFT); ?></h1>
+      <p>Placed on <?php echo !empty($view_order['created_at']) ? date('F d, Y', strtotime($view_order['created_at'])) : '—'; ?></p>
+    </div>
+    <div class="page-header-actions">
+      <a href="orders.php" class="btn btn-secondary">← Back to Orders</a>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 300px;gap:1.5rem;align-items:start;">
+    <div class="table-container">
+      <div class="table-toolbar"><h3>Items Ordered</h3></div>
+      <?php if (empty($order_items)): ?>
+        <div class="empty-state" style="padding:2rem;">
+          <p>No items found for this order.</p>
+        </div>
+      <?php else: ?>
+        <div class="table-overflow">
+          <table>
+            <thead>
+              <tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Subtotal</th></tr>
+            </thead>
+            <tbody>
+              <?php foreach ($order_items as $item): ?>
+                <tr>
+                  <td class="fw-600"><?php echo htmlspecialchars($item['name']); ?></td>
+                  <td><?php echo intval($item['quantity']); ?></td>
+                  <td>$<?php echo number_format($item['price'], 2); ?></td>
+                  <td class="fw-600 text-gold">$<?php echo number_format($item['price'] * $item['quantity'], 2); ?></td>
+                </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+      <?php endif; ?>
+    </div>
+
+    <div class="order-summary">
+      <div class="order-summary-header"><h3>Order Info</h3></div>
+      <div class="order-summary-body">
+        <div class="summary-row"><span>Customer</span><span><?php echo htmlspecialchars($view_order['name']); ?></span></div>
+        <div class="summary-row"><span>Email</span><span><?php echo htmlspecialchars($view_order['email'] ?? '—'); ?></span></div>
+        <div class="summary-row"><span>Phone</span><span><?php echo htmlspecialchars($view_order['phone'] ?? '—'); ?></span></div>
+        <div class="summary-row"><span>Status</span>
+          <span class="badge <?php echo order_badge($view_order['status'] ?? ''); ?>">
+            <?php echo ucfirst($view_order['status'] ?? '—'); ?>
+          </span>
+        </div>
+        <div class="summary-row total"><span>Total</span><span>$<?php echo number_format($view_order['total_amount'] ?? 0, 2); ?></span></div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+  @media(max-width:768px){
+    div[style*="grid-template-columns:1fr 300px"]{display:block!important;}
+    div[style*="grid-template-columns:1fr 300px"] > *{margin-bottom:1rem;}
+  }
+  </style>
+
+<?php endif; ?>
+
+<script>
+function filterTable() {
+  var q = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
+  document.querySelectorAll('#ordersTable tbody tr').forEach(function(row) {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+</script>
+
+<?php include(dirname(__FILE__) . '/../includes/footer.php'); ?>

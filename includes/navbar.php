@@ -1,37 +1,92 @@
 <?php
-/**
- * Navbar include file
- */
+// Determine active page
+$current_page = basename($_SERVER['PHP_SELF'], '.php');
+$current_dir  = basename(dirname($_SERVER['PHP_SELF']));
+$base         = isset($base_path) ? $base_path : '';
+
+function nav_active($page, $current) {
+  return $page === $current ? 'active' : '';
+}
 ?>
-<nav class="navbar">
-    <div class="navbar-container">
-        <a href="/final/" class="navbar-logo">
-            <span class="logo-icon"><?php echo svg_icon('food', '24'); ?></span> FeastFlow
-        </a>
-        <ul class="nav-menu">
-            <li class="nav-item">
-                <a href="/final/pages/products.php" class="nav-link"><?php echo svg_icon('menu', '18'); ?> Menu</a>
-            </li>
-            <li class="nav-item">
-                <a href="/final/pages/customers.php" class="nav-link"><?php echo svg_icon('users', '18'); ?> Customers</a>
-            </li>
-            <li class="nav-item">
-                <a href="/final/pages/cart.php" class="nav-link">
-                    <?php echo svg_icon('cart', '18'); ?> Cart
-                    <?php if (isset($_SESSION['customer_id'])): 
-                        require_once(dirname(__FILE__, 2) . '/config/db.php');
-                        require_once(dirname(__FILE__, 2) . '/classes/Cart.php');
-                        $cart = new Cart($conn);
-                        $count = $cart->getCartCount($_SESSION['customer_id']);
-                        if ($count > 0): ?>
-                        <span class="cart-badge"><?php echo $count; ?></span>
-                        <?php endif; ?>
-                    <?php endif; ?>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/final/pages/orders.php" class="nav-link"><?php echo svg_icon('orders', '18'); ?> Orders</a>
-            </li>
-        </ul>
-    </div>
-</nav>
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <a href="<?php echo $base; ?>index.php" class="brand-logo">
+      <div class="brand-icon">🍽️</div>
+      <div>
+        <div class="brand-name">FeastFlow</div>
+        <div class="brand-tagline">Food Ordering System</div>
+      </div>
+    </a>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a href="<?php echo $base; ?>index.php"
+       class="nav-link <?php echo nav_active('index', $current_page); ?>">
+      <span class="nav-icon">📊</span> Dashboard
+    </a>
+
+    <div class="nav-section-label">Catalog</div>
+    <a href="<?php echo $base; ?>pages/products.php"
+       class="nav-link <?php echo nav_active('products', $current_page); ?>">
+      <span class="nav-icon">🍔</span> Menu Items
+    </a>
+    <a href="<?php echo $base; ?>pages/categories.php"
+       class="nav-link <?php echo nav_active('categories', $current_page); ?>">
+      <span class="nav-icon">🗂️</span> Categories
+    </a>
+
+    <div class="nav-section-label">Orders</div>
+    <a href="<?php echo $base; ?>pages/cart.php"
+       class="nav-link <?php echo nav_active('cart', $current_page); ?>">
+      <span class="nav-icon">🛒</span> Cart
+      <?php
+        $cart_count = isset($_SESSION['cart']) ? array_sum(array_column($_SESSION['cart'], 'qty')) : 0;
+        if ($cart_count > 0):
+      ?>
+        <span class="nav-badge"><?php echo $cart_count; ?></span>
+      <?php endif; ?>
+    </a>
+    <a href="<?php echo $base; ?>pages/orders.php"
+       class="nav-link <?php echo nav_active('orders', $current_page); ?>">
+      <span class="nav-icon">📋</span> All Orders
+    </a>
+
+    <div class="nav-section-label">People</div>
+    <a href="<?php echo $base; ?>pages/customers.php"
+       class="nav-link <?php echo nav_active('customers', $current_page); ?>">
+      <span class="nav-icon">👥</span> Customers
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <p>FeastFlow &copy; <?php echo date('Y'); ?></p>
+  </div>
+</aside>
+
+<!-- Main content wrapper -->
+<div class="main-content">
+
+<!-- Top Bar -->
+<header class="topbar">
+  <div class="topbar-left">
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+      &#9776;
+    </button>
+    <span class="topbar-title">
+      <?php echo isset($page_title) ? htmlspecialchars($page_title) : 'Dashboard'; ?>
+    </span>
+  </div>
+  <div class="topbar-right">
+    <a href="<?php echo $base; ?>pages/products.php?action=add" class="topbar-btn primary">+ Add Item</a>
+    <a href="<?php echo $base; ?>pages/cart.php" class="topbar-btn cart-btn">
+      🛒
+      <?php if ($cart_count > 0): ?>
+        <span class="cart-count"><?php echo $cart_count; ?></span>
+      <?php endif; ?>
+    </a>
+  </div>
+</header>
+
+<div class="content-area">

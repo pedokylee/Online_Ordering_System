@@ -69,6 +69,7 @@ $avatar_colors = ['#D4830A','#27814A','#C0392B','#185FA5','#7F77DD'];
 <?php include(dirname(__FILE__) . '/../includes/navbar.php'); ?>
 
 <div class="content-area">
+<div class="container">
 <main class="main-content">
 
 <?php if ($message): ?>
@@ -202,9 +203,10 @@ function filterTable() {
     row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
   });
 }
-</script>
+ </script>
 
 </main>
+</div>
 </div>
 
 <?php include(dirname(__FILE__) . '/../includes/footer.php'); ?>

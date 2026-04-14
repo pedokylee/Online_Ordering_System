@@ -119,10 +119,9 @@ function order_badge($status) {
                 <td><?php echo htmlspecialchars($o['name'] ?? 'Unknown'); ?></td>
                 <td class="fw-600 text-gold">$<?php echo number_format($o['total_amount'] ?? 0, 2); ?></td>
                 <td>
-                  <form method="POST" style="display:inline-flex;align-items:center;gap:6px;">
+                  <form method="POST" class="status-form">
                     <input type="hidden" name="order_id" value="<?php echo $o['id']; ?>">
-                    <select name="status" onchange="this.form.submit()"
-                            style="font-size:11px;padding:3px 6px;border:1px solid var(--c-border-strong);border-radius:6px;background:var(--c-surface);color:var(--c-ink);cursor:pointer;font-family:var(--ff-body);">
+                    <select name="status" onchange="this.form.submit()" class="status-select">
                       <?php foreach ($statuses as $s): ?>
                         <option value="<?php echo $s; ?>" <?php echo strtolower($o['status'] ?? '') === $s ? 'selected' : ''; ?>>
                           <?php echo ucfirst($s); ?>
@@ -162,7 +161,7 @@ function order_badge($status) {
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 300px;gap:1.5rem;align-items:start;">
+  <div class="order-view-grid container">
     <div class="table-container">
       <div class="table-toolbar"><h3>Items Ordered</h3></div>
       <?php if (empty($order_items)): ?>
@@ -206,12 +205,7 @@ function order_badge($status) {
     </div>
   </div>
 
-  <style>
-  @media(max-width:768px){
-    div[style*="grid-template-columns:1fr 300px"]{display:block!important;}
-    div[style*="grid-template-columns:1fr 300px"] > *{margin-bottom:1rem;}
-  }
-  </style>
+
 
 <?php endif; ?>
 

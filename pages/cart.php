@@ -118,7 +118,7 @@ $icon_types = ['food', 'menu', 'orders', 'users', 'checkout'];
   </div>
 </div>
 
-<div class="cart-layout-grid">
+<div class="cart-layout-grid container">
 
   <!-- Left: Cart + Add from Menu -->
   <div>
@@ -146,7 +146,22 @@ $icon_types = ['food', 'menu', 'orders', 'users', 'checkout'];
         <form method="POST">
           <?php $idx = 0; foreach ($cart as $pid => $item): ?>
             <div class="cart-item">
-              <div class="cart-item-img"><?php echo svg_icon($icon_types[$idx % count($icon_types)], '24'); ?></div>
+              <div class="cart-item-img" style="width: 60px; height: 60px; border-radius: 5px; overflow: hidden; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                <?php 
+                  $prod = null;
+                  foreach ($products as $p) {
+                    if ($p['id'] == $pid) {
+                      $prod = $p;
+                      break;
+                    }
+                  }
+                  if ($prod && !empty($prod['image_path']) && file_exists('./' . $prod['image_path'])): 
+                ?>
+                  <img src="<?php echo htmlspecialchars($prod['image_path']); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                <?php else: ?>
+                  <span style="font-size: 24px; color: #ccc;">📸</span>
+                <?php endif; ?>
+              </div>
               <div class="cart-item-info">
                 <div class="cart-item-name"><?php echo htmlspecialchars($item['name']); ?></div>
                 <div class="cart-item-price">$<?php echo number_format($item['price'], 2); ?> each</div>
@@ -154,7 +169,7 @@ $icon_types = ['food', 'menu', 'orders', 'users', 'checkout'];
               <div class="cart-item-controls">
                 <input type="number" name="qty_item[<?php echo intval($pid); ?>]"
                        value="<?php echo intval($item['qty']); ?>" min="0" max="99"
-                       style="width:65px;padding:0.35rem 0.5rem;text-align:center;border:1px solid var(--c-border-strong);border-radius:var(--radius-md);font-family:var(--ff-body);font-size:0.875rem;">
+ class="qty-input">
               </div>
               <div class="cart-item-total">$<?php echo number_format($item['price'] * $item['qty'], 2); ?></div>
               <a href="?remove=<?php echo intval($pid); ?>" class="btn btn-sm btn-danger" title="Remove">✕</a>
@@ -187,7 +202,13 @@ $icon_types = ['food', 'menu', 'orders', 'users', 'checkout'];
           <?php foreach ($products as $i => $p): ?>
             <div class="product-card menu-item"
                  data-name="<?php echo strtolower(htmlspecialchars($p['name'])); ?>">
-              <div class="product-card-img"><?php echo svg_icon($icon_types[$i % count($icon_types)], '24'); ?></div>
+              <div class="product-card-img" style="width: 100%; height: 120px; border-radius: 5px; overflow: hidden; background: #f0f0f0; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
+                <?php if (!empty($p['image_path']) && file_exists('./' . $p['image_path'])): ?>
+                  <img src="<?php echo htmlspecialchars($p['image_path']); ?>" alt="<?php echo htmlspecialchars($p['name']); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                <?php else: ?>
+                  <span style="font-size: 40px; color: #ccc;">📸</span>
+                <?php endif; ?>
+              </div>
               <div class="product-card-body">
                 <div class="product-card-name"><?php echo htmlspecialchars($p['name']); ?></div>
                 <div class="product-card-desc">
@@ -243,8 +264,8 @@ $icon_types = ['food', 'menu', 'orders', 'users', 'checkout'];
     </div>
 
     <?php if (!empty($cart)): ?>
-      <div class="form-card" style="max-width:100%;">
-        <h3 style="margin-bottom:1rem;font-size:1rem;font-family:var(--ff-display);">Checkout</h3>
+      <div class="form-card">
+        <h3>Checkout</h3>
         <form method="POST">
           <div class="form-group mb-2">
             <label for="customer_id">Select Customer *</label>
@@ -260,8 +281,7 @@ $icon_types = ['food', 'menu', 'orders', 'users', 'checkout'];
               No customers yet. <a href="customers.php?action=add">Add a customer</a> first.
             </p>
           <?php endif; ?>
-          <button type="submit" name="checkout" class="btn btn-primary btn-lg"
-                  style="width:100%;justify-content:center;"
+          <button type="submit" name="checkout" class="btn btn-primary btn-lg" style="width:100%;">
                   <?php echo empty($customers) ? 'disabled' : ''; ?>>
             🎉 Place Order — $<?php echo number_format($total, 2); ?>
           </button>
@@ -273,17 +293,7 @@ $icon_types = ['food', 'menu', 'orders', 'users', 'checkout'];
 
 </div><!-- /cart-layout-grid -->
 
-<style>
-.cart-layout-grid {
-  display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 1.5rem;
-  align-items: start;
-}
-@media (max-width: 900px) {
-  .cart-layout-grid { grid-template-columns: 1fr; }
-}
-</style>
+
 
 <script>
 function filterMenu() {

@@ -1,0 +1,9 @@
+# Prevent direct execution of files in products directory
+<FilesMatch "\.php$">
+    Deny from all
+</FilesMatch>
+
+# Allow image file types
+<FilesMatch "\.(jpg|jpeg|png|gif|webp)$">
+    Allow from all
+</FilesMatch>

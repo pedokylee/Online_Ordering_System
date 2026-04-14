@@ -32,7 +32,7 @@
   --c-green-pale: #E4F5EC;
 
   --nav-h: 68px;
-  --sidebar-w: 260px;
+  --sidebar-w: 220px;
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
@@ -60,6 +60,14 @@ a { color: var(--c-gold); text-decoration: none; transition: color var(--transit
 a:hover { color: var(--c-gold-dark); }
 img { max-width: 100%; display: block; }
 ul { list-style: none; }
+
+/* ── Container ── */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  width: 100%;
+}
 
 /* ── Typography ── */
 h1, h2, h3, h4 {
@@ -91,8 +99,7 @@ section { margin-bottom: 3rem; }
   left: 0;
   height: 100vh;
   z-index: 100;
-  overflow-y: auto;
-  transition: transform var(--transition);
+  overflow: hidden;
 }
 
 .sidebar-brand {
@@ -177,7 +184,7 @@ section { margin-bottom: 3rem; }
   font-weight: 600;
   padding: 2px 6px;
   border-radius: 20px;
-  min-width: 18px;
+  min-width:  Asc 18px;
   text-align: center;
 }
 .nav-link.active .nav-badge {
@@ -285,6 +292,9 @@ section { margin-bottom: 3rem; }
 .content-area {
   padding: 2rem 2.25rem;
   flex: 1;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* ── Page Header ── */
@@ -476,6 +486,25 @@ section { margin-bottom: 3rem; }
 .btn-sm { padding: 0.35rem 0.85rem; font-size: 0.8rem; }
 .btn-lg { padding: 0.75rem 1.75rem; font-size: 1rem; }
 
+/* ── Layout Grids ── */
+.cart-layout-grid, .order-view-grid {
+  display: grid;
+  gap: 1.5rem;
+  align-items: start;
+}
+.cart-layout-grid {
+  grid-template-columns: 1fr 340px;
+}
+.order-view-grid {
+  grid-template-columns: 1fr 300px;
+}
+@media (max-width: 900px) {
+  .cart-layout-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .order-view-grid { grid-template-columns: 1fr; }
+}
+
 /* ── Data Table ── */
 .table-container {
   background: var(--c-surface);
@@ -535,6 +564,13 @@ thead th {
   border-bottom: 1px solid var(--c-border);
   white-space: nowrap;
 }
+ /* Table column widths for even alignment */
+thead th:nth-child(1) { width: 8%; }  /* # */
+thead th:nth-child(2) { width: 25%; } /* Item */
+thead th:nth-child(3) { width: 12%; } /* Price */
+thead th:nth-child(4) { width: 12%; } /* Stock */
+thead th:nth-child(5) { width: 15%; } /* Date */
+thead th:nth-child(6) { width: 18%; } /* Actions */
 tbody tr {
   border-bottom: 1px solid var(--c-border);
   transition: background var(--transition);
@@ -547,6 +583,18 @@ tbody td {
   vertical-align: middle;
 }
 .td-actions { display: flex; gap: 0.5rem; align-items: center; }
+
+.status-form { display: inline-flex; align-items: center; gap: 6px; }
+.status-select {
+  font-size: 11px;
+  padding: 3px 6px;
+  border: 1px solid var(--c-border-strong);
+  border-radius: 6px;
+  background: var(--c-surface);
+  color: var(--c-ink);
+  cursor: pointer;
+  font-family: var(--ff-body);
+}
 
 /* ── Badges / Pills ── */
 .badge {
@@ -574,7 +622,8 @@ tbody td {
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.25rem;
+  gap: 1.25rem 1.5rem;
+  align-items: start;
 }
 .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
 .form-group.full { grid-column: 1 / -1; }
@@ -590,7 +639,8 @@ input[type="number"],
 input[type="tel"],
 input[type="password"],
 select,
-textarea {
+textarea,
+.qty-input {
   width: 100%;
   padding: 0.6rem 0.9rem;
   border: 1px solid var(--c-border-strong);
@@ -602,12 +652,25 @@ textarea {
   transition: border-color var(--transition), box-shadow var(--transition);
   outline: none;
 }
-input:focus, select:focus, textarea:focus {
+.qty-input {
+  width: 65px;
+  padding: 0.35rem 0.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+}
+input:focus, select:focus, textarea:focus, .qty-input:focus {
   border-color: var(--c-gold);
   box-shadow: 0 0 0 3px rgba(212,131,10,0.12);
 }
 textarea { resize: vertical; min-height: 90px; }
-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237A7068' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 2rem; }
+select { 
+  cursor: pointer; 
+  appearance: none; 
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237A7068' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); 
+  background-repeat: no-repeat; 
+  background-position: right 12px center; 
+  padding-right: 2rem; 
+}
 .form-hint { font-size: 11px; color: var(--c-hint); }
 .form-actions {
   display: flex;
@@ -658,7 +721,6 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   color: var(--c-ink);
 }
 .qty-btn:hover { background: var(--c-gold); border-color: var(--c-gold); color: #fff; }
-.qty-value { font-weight: 600; font-size: 0.9rem; min-width: 24px; text-align: center; }
 .cart-item-total { font-weight: 600; color: var(--c-charcoal); font-size: 0.95rem; min-width: 60px; text-align: right; }
 
 /* ── Order Summary Card ── */
@@ -809,7 +871,7 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 
 /* Mobile: ≤768px */
 @media (max-width: 768px) {
-  :root { --sidebar-w: 260px; }
+  :root { --sidebar-w: 200px; }
 
   .sidebar {
     transform: translateX(-100%);
@@ -820,7 +882,7 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   }
   .menu-toggle { display: flex; align-items: center; justify-content: center; }
 
-  .main-content { margin-left: 0; }
+  .main-content { margin-left: var(--sidebar-w); }
 
   .topbar { padding: 0 1rem; }
   .topbar-title { font-size: 1rem; }

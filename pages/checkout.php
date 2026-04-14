@@ -72,78 +72,85 @@ $cart_total = $cart->getCartTotal($customer_id);
 
 <div class="content-area">
 <main class="main-content">
-    <div class="page-header">
-        <h1>Complete Your Order</h1>
+    <div class="page-header container">
+        <div class="page-header-text">
+            <h1>Checkout</h1>
+            <p>Review your cart and complete the order.</p>
+        </div>
     </div>
 
     <?php if (!empty($message)): ?>
-        <div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div>
+        <div class="alert alert-success container"><?php echo htmlspecialchars($message); ?></div>
     <?php endif; ?>
     <?php if (!empty($error)): ?>
-        <div class="alert alert-error"><?php echo htmlspecialchars($error); ?></div>
+        <div class="alert alert-danger container"><?php echo htmlspecialchars($error); ?></div>
     <?php endif; ?>
 
     <?php if ($cart_result && $cart_result->rowCount() > 0): ?>
-        <div class="checkout-layout">
-            <!-- Order Review -->
-            <div class="checkout-review">
-                <h2>Order Summary</h2>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Price</th>
-                            <th>Qty</th>
-                            <th>Subtotal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        $cart_result = $cart->getCart($customer_id);
-                        while($row = $cart_result->fetch()):
-                        ?>
-                        ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($row['name']); ?></td>
-                            <td><?php echo CURRENCY_SYMBOL . number_format($row['price'], 2); ?></td>
-                            <td><?php echo $row['quantity']; ?></td>
-                            <td><?php echo CURRENCY_SYMBOL . number_format($row['price'] * $row['quantity'], 2); ?></td>
-                        </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
+        <div class="cart-layout-grid container">
+            <div class="table-container">
+                <div class="table-toolbar">
+                    <h3>Order Items</h3>
+                </div>
+                <div class="table-overflow">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Qty</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            $cart_result = $cart->getCart($customer_id);
+                            $grand_total = 0;
+                            while($row = $cart_result->fetch()):
+                                $sub = $row['price'] * $row['quantity'];
+                                $grand_total += $sub;
+                            ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($row['name']); ?></td>
+                                <td>$<?php echo number_format($row['price'], 2); ?></td>
+                                <td><?php echo $row['quantity']; ?></td>
+                                <td class="fw-600">$<?php echo number_format($sub, 2); ?></td>
+                            </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <!-- Checkout Form -->
-            <div class="checkout-form">
-                <h2>Complete Your Order</h2>
-                <div class="order-summary-box">
+            <div class="order-summary">
+                <div class="order-summary-header"><h3>Summary</h3></div>
+                <div class="order-summary-body">
                     <div class="summary-row">
                         <span>Subtotal:</span>
-                        <strong><?php echo CURRENCY_SYMBOL . number_format($cart_total, 2); ?></strong>
+                        <span>$<?php echo number_format($grand_total, 2); ?></span>
                     </div>
                     <div class="summary-row">
                         <span>Tax (10%):</span>
-                        <strong><?php echo CURRENCY_SYMBOL . number_format($cart_total * 0.10, 2); ?></strong>
+                        <span>$<?php echo number_format($grand_total * 0.10, 2); ?></span>
                     </div>
                     <div class="summary-row total">
-                        <span>Final Total:</span>
-                        <strong><?php echo CURRENCY_SYMBOL . number_format($cart_total * 1.10, 2); ?></strong>
+                        <span>Total:</span>
+                        <span>$<?php echo number_format($grand_total * 1.10, 2); ?></span>
                     </div>
 
-                    <form method="POST" action="">
+                    <form method="POST" action="" class="mt-3">
                         <input type="hidden" name="action" value="checkout">
-                        <button type="submit" class="btn btn-primary btn-block btn-large">
+                        <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">
                             Place Order
                         </button>
                     </form>
-
-                    <a href="cart.php" class="btn btn-secondary btn-block">Back to Cart</a>
+                    <a href="cart.php" class="btn btn-secondary btn-lg" style="width:100%; margin-top:0.5rem; display:block;">← Back to Cart</a>
                 </div>
             </div>
         </div>
     <?php else: ?>
-        <div class="empty-state">
+        <div class="empty-state container">
+            <div class="empty-icon"><?php echo svg_icon('checkout', '48'); ?></div>
             <h2>Your cart is empty</h2>
             <p>Please add items to your cart before checking out.</p>
             <a href="products.php" class="btn btn-primary">Continue Shopping</a>

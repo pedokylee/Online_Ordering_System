@@ -16,9 +16,15 @@ if ($_SERVER['REQUEST_METHOD'] ?? '' === 'POST') {
     $name  = trim($_POST['name']  ?? '');
     $price = floatval($_POST['price'] ?? 0);
     $stock = intval($_POST['stock'] ?? 0);
+    $image_path = null;
 
     if ($action === 'add') {
-        if ($product->create($name, $price, $stock)) {
+        // Handle image upload
+        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            $image_path = $product->uploadImage($_FILES['image']);
+        }
+
+        if ($product->create($name, $price, $stock, $image_path)) {
             $message = ['type' => 'success', 'text' => '✅ Menu item added successfully!'];
             $action  = 'list';
         } else {
@@ -26,7 +32,25 @@ if ($_SERVER['REQUEST_METHOD'] ?? '' === 'POST') {
         }
     } elseif ($action === 'edit' && isset($_POST['id'])) {
         $id = intval($_POST['id']);
-        if ($product->update($id, $name, $price, $stock)) {
+        $existing_product = $product->getById($id);
+
+        // Handle image upload or keep existing
+        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            $new_image_path = $product->uploadImage($_FILES['image']);
+            if ($new_image_path) {
+                // Delete old image if exists
+                if (!empty($existing_product['image_path'])) {
+                    $product->deleteImage($existing_product['image_path']);
+                }
+                $image_path = $new_image_path;
+            } else {
+                $image_path = $existing_product['image_path'];
+            }
+        } else {
+            $image_path = $existing_product['image_path'] ?? null;
+        }
+
+        if ($product->update($id, $name, $price, $stock, $image_path)) {
             $message = ['type' => 'success', 'text' => '✅ Item updated successfully!'];
             $action  = 'list';
         } else {
@@ -38,6 +62,13 @@ if ($_SERVER['REQUEST_METHOD'] ?? '' === 'POST') {
 // Handle delete
 if ($action === 'delete' && isset($_GET['id'])) {
     $id = intval($_GET['id']);
+    $prod = $product->getById($id);
+    
+    // Delete image if exists
+    if ($prod && !empty($prod['image_path'])) {
+        $product->deleteImage($prod['image_path']);
+    }
+    
     $message = $product->delete($id)
         ? ['type' => 'success', 'text' => '✅ Item deleted successfully!']
         : ['type' => 'danger',  'text' => '❌ Could not delete item.'];
@@ -66,6 +97,7 @@ $icon_types = ['food', 'menu', 'orders', 'users', 'checkout'];
 <?php include(dirname(__FILE__) . '/../includes/navbar.php'); ?>
 
 <div class="content-area">
+<div class="container">
 <main class="main-content">
 
 <?php if ($message): ?>
@@ -108,6 +140,7 @@ $icon_types = ['food', 'menu', 'orders', 'users', 'checkout'];
           <thead>
             <tr>
               <th>#</th>
+              <th>Image</th>
               <th>Item</th>
               <th>Price</th>
               <th>Stock</th>
@@ -120,10 +153,16 @@ $icon_types = ['food', 'menu', 'orders', 'users', 'checkout'];
               <tr>
                 <td class="text-muted text-sm"><?php echo $i + 1; ?></td>
                 <td>
-                  <div class="d-flex align-center gap-1">
-                    <span style="font-size:20px"><?php echo svg_icon($icon_types[$i % count($icon_types)], '20'); ?></span>
-                    <span class="fw-600"><?php echo htmlspecialchars($p['name']); ?></span>
+                  <div style="width: 50px; height: 50px; border-radius: 5px; overflow: hidden; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                    <?php if (!empty($p['image_path']) && file_exists('./' . $p['image_path'])): ?>
+                      <img src="<?php echo htmlspecialchars($p['image_path']); ?>" alt="<?php echo htmlspecialchars($p['name']); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                    <?php else: ?>
+                      <span style="font-size: 28px; color: #ccc;">📸</span>
+                    <?php endif; ?>
                   </div>
+                </td>
+                <td>
+                  <span class="fw-600"><?php echo htmlspecialchars($p['name']); ?></span>
                 </td>
                 <td class="fw-600 text-gold">$<?php echo number_format($p['price'], 2); ?></td>
                 <td>
@@ -164,7 +203,7 @@ $icon_types = ['food', 'menu', 'orders', 'users', 'checkout'];
   </div>
 
   <div class="form-card">
-    <form method="POST" action="?action=<?php echo $action; ?><?php echo ($action === 'edit' && $edit_data) ? '&id=' . intval($edit_data['id']) : ''; ?>">
+    <form method="POST" action="?action=<?php echo $action; ?><?php echo ($action === 'edit' && $edit_data) ? '&id=' . intval($edit_data['id']) : ''; ?>" enctype="multipart/form-data">
       <?php if ($action === 'edit' && $edit_data): ?>
         <input type="hidden" name="id" value="<?php echo intval($edit_data['id']); ?>">
       <?php endif; ?>
@@ -188,6 +227,22 @@ $icon_types = ['food', 'menu', 'orders', 'users', 'checkout'];
                  value="<?php echo intval($edit_data['stock'] ?? 0); ?>">
           <span class="form-hint">Set to 0 if out of stock.</span>
         </div>
+        <div class="form-group full">
+          <label for="image">Product Image</label>
+          <div style="display: flex; gap: 15px; align-items: flex-start;">
+            <div style="flex: 1;">
+              <input type="file" id="image" name="image" accept="image/*" onchange="previewImage(event)">
+              <span class="form-hint">Accepted: JPG, PNG, GIF, WebP (Max 5MB)</span>
+            </div>
+            <div id="imagePreview" style="width: 100px; height: 100px; border-radius: 5px; overflow: hidden; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+              <?php if ($action === 'edit' && !empty($edit_data['image_path']) && file_exists('./' . $edit_data['image_path'])): ?>
+                <img id="previewImg" src="<?php echo htmlspecialchars($edit_data['image_path']); ?>" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
+              <?php else: ?>
+                <span id="noImageText" style="font-size: 32px; color: #ccc;">📸</span>
+              <?php endif; ?>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="form-actions">
@@ -207,6 +262,53 @@ function filterTable() {
   document.querySelectorAll('#productsTable tbody tr').forEach(function(row) {
     row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
   });
+}
+
+function previewImage(event) {
+  const file = event.target.files[0];
+  const preview = document.getElementById('imagePreview');
+  const previewImg = document.getElementById('previewImg');
+  const noImageText = document.getElementById('noImageText');
+  
+  if (file) {
+    // Validate file size (5MB)
+    if (file.size > 5242880) {
+      alert('File size must not exceed 5MB');
+      event.target.value = '';
+      return;
+    }
+    
+    // Validate file type
+    const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      alert('Only JPG, PNG, GIF, and WebP images are allowed');
+      event.target.value = '';
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      if (previewImg) {
+        previewImg.src = e.target.result;
+        previewImg.style.display = 'block';
+      } else {
+        // Create img element if it doesn't exist
+        const img = document.createElement('img');
+        img.id = 'previewImg';
+        img.src = e.target.result;
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        preview.innerHTML = '';
+        preview.appendChild(img);
+      }
+      
+      if (noImageText) {
+        noImageText.style.display = 'none';
+      }
+    };
+    reader.readAsDataURL(file);
+  }
 }
 </script>
 

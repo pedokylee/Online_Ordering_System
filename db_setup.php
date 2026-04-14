@@ -8,6 +8,23 @@
 require_once 'config/db.php';
 
 try {
+    // Drop existing tables to ensure fresh schema (disable foreign key checks temporarily)
+    $conn->exec("SET FOREIGN_KEY_CHECKS = 0");
+    
+    // Drop tables in correct order
+    $tables_to_drop = ['order_items', 'cart', 'orders', 'products', 'categories', 'customers'];
+    foreach ($tables_to_drop as $table) {
+        try {
+            $conn->exec("DROP TABLE IF EXISTS " . $table);
+        } catch (PDOException $e) {
+            // Table might not exist yet, that's ok
+        }
+    }
+    
+    $conn->exec("SET FOREIGN_KEY_CHECKS = 1");
+    
+    echo "✓ Tables dropped successfully<br>";
+
     // Create Customers table
     $createCustomers = "CREATE TABLE IF NOT EXISTS customers (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -37,6 +54,7 @@ try {
         name VARCHAR(255) NOT NULL,
         price DECIMAL(10, 2) NOT NULL,
         stock INT NOT NULL DEFAULT 0,
+        image_path VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci";
 
